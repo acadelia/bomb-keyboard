@@ -2,6 +2,7 @@ const submitButton = document.getElementById("submitButton");
 const timerDiv = document.getElementById("timer");
 const keyboard = document.querySelector(".keyboard");
 const digitContainer = document.getElementById("digitContainer");
+const digitDivs = Array.from(digitContainer.querySelectorAll(".digit"));
 
 let timer = 60;
 let intervalId;
@@ -38,8 +39,13 @@ const updateTimer = () => {
 
 const submitGuess = () => {
   const guess = updateDigits();
-  const digitDivs = Array.from(digitContainer.querySelectorAll(".digit"));
   let correctDigits = 0;
+
+  const removeAnimationClass = (div) => {
+    div.classList.remove("green", "red");
+    div.textContent = "";
+    div.removeEventListener("animationend", () => removeAnimationClass(div));
+  };
 
   digitDivs.forEach((div, i) => {
     if (guess[i] === code[i]) {
@@ -48,46 +54,29 @@ const submitGuess = () => {
     } else {
       div.classList.add("red");
     }
+    div.addEventListener("animationend", () => removeAnimationClass(div));
   });
 
   if (correctDigits === 4) {
     const showTime = 60 - (60 - timer);
     clearInterval(intervalId);
-    resetDigitDivs();
     alert(`Congratulations! Bomb defused! You saved ${showTime} seconds.`);
     generateNewCode();
-  } else {
-    setTimeout(() => {
-      resetDigitDivs(digitDivs);
-    }, 200);
-    if (timer === 0 && !alertShown) {
-      generateNewCode();
-    }
   }
-};
-
-const resetDigitDivs = () => {
-  digitDivs.forEach((div) => {
-    div.classList.remove("green", "red");
-    div.textContent = "";
-  });
 };
 
 const updateTimerAndCheck = () => {
   updateTimer();
   if (timer === 0 && !alertShown) {
-    clearInterval(intervalId);
-    submitGuess();
     alertShown = true;
     alert("Time's up! The bomb exploded!");
+    generateNewCode();
   } else {
     timer--;
   }
 };
 
 //keyboard :)
-
-const digitDivs = Array.from(digitContainer.querySelectorAll(".digit"));
 
 let currentDigit = 0;
 let animatedKey;
@@ -97,9 +86,7 @@ const handleKeyInteraction = (key) => {
   if (!/^[A-Z0-9]$/.test(keyText)) {
     return;
   }
-
   digitDivs[currentDigit].textContent = keyText;
-
   if (key.matches(".pinky, .ring, .middle, .pointer1st, .pointer2nd")) {
     currentDigit++;
     if (currentDigit >= digitDivs.length) {
@@ -132,32 +119,26 @@ document.addEventListener("keyup", (event) => {
 });
 
 document.addEventListener("click", (e) => {
-  if (!e.target.closest(".keyboard")) {
-    if (animatedKey) {
-      animatedKey.classList.remove("selected");
-      animatedKey = null;
-    }
+  if (!e.target.closest(".keyboard") && animatedKey) {
+    animatedKey.classList.remove("selected");
+    animatedKey = null;
   }
 });
 
 const startGame = () => {
   clearInterval(intervalId);
-  updateTimer();
   intervalId = setInterval(updateTimerAndCheck, 1000);
 };
 
 document.addEventListener("DOMContentLoaded", () => {
   generateNewCode();
-  startGame();
 });
-
-console.log(code);
 
 //sa lucreze mai repede ??
 //sa pot sterge din div ??
 //animatia la buton  -
-//de simplificat codul ??
+//de simplificat codul -
 //stiling -
 //animation de simplificat codul -
 //sa fie in input allowed doar cifre si litere-
-//settimeout de stert
+//settimeout de sters !!!
